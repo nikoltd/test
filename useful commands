@@ -1,0 +1,54 @@
+Nikolais useful commands
+
+Search and replace multiple strings in directories and sub directories also makes a backup of each file that is edited.
+ 
+find /path/to/directory/ -type f -exec sed -i.bak 's/oldstring/newstring/g; s/oldstring2/newstring2/g' {} \;
+ 
+If the grep dont work try this
+ 
+find /home -type f -exec grep 'rapid' {} /dev/null \;
+ 
+See what Db users are connecting on Luna
+ 
+egrep -v 'isup@localhost|root@localhost' /var/log/mysql/mysql.log | grep @localhost | awk '{print $5}' | sort | uniq | less
+ 
+Remove mail message files older than a specific date, Make a file with a specific timestamp
+ 
+touch -t 201404120000 /tmp/timestamp
+ 
+Remove messages with a specific directory
+ 
+root@kelvin:/virtual/tlceilings.com.au/mail# find /virtual/tlceilings.com.au/mail/estimator/ -type f ! -newer /tmp/timestamp -exec rm -f {} +
+ 
+See disk usage on hidden files and folders
+root@kelvin:/virtual/tlceilings.com.au/mail# du -sh path/.[!.]*
+ 
+List all hosting accounts in csv
+on faid
+ 
+SELECT c.login, h.sku, d.domain, FROM_UNIXTIME(h.next_payment) AS 'next-due'  INTO OUTFILE 'all_hosting.csv' FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '
+"' LINES TERMINATED BY '\n' FROM clients c JOIN hosting h ON (c.login = h.login) JOIN domains d ON (d.domain_id = h.domain_id) ORDER BY c.login, d.domain;
+ 
+Learn IPTABLES
+ 
+ 
+clone existing VM's LV
+Check to see if there is enough space on the hyper-visor, using vgs, lvs, pvs.
+lvcreate -n mcqt-mess02-ktst --size 20G vg2
+dd if=/dev/vg2/mcqt-mess01-kst of=/dev/vg2/mcqt-mess02-kst bs=64k
+create a virsh xml config file, this can be done by copying existing config of another guest and editing it
+cd /etc/libvirt/qemu/
+cp mcqt-mess01-kst.xml mcqt-mess02-kst.xml
+vi mcqt-mess02-kst.xml
+edit virsh xml so it has a uniqe uuid and mac address, also configure required resources e.g memory or vcpu
+Connect to VM using virtual machine manager and boot the vm using a live CD. This enables us to mount the LV we created and edit its sysconfig to use the new mac address and ip.
+vgscan to see available volume groups, add in all of the available VG's
+vgchange -a y
+When you use fdisk -lu
+I am able to get the correct partition of the newly visible LV in this case the lv partition to use is
+/dev/mapper/root-rootfs
+I then create a mount point and mount the lv partition
+mkdir /tmp/lv
+mount /dev/mapper/root-rootfs /tmp/lv
+From here we change IP address and mac address in the /etc/sysconfig/network-scripts/ifcfg-eth, these changes will need a shutdown/startup to take effect.
+Also change hostname, and welcome message.
